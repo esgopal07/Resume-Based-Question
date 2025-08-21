@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Resume Q&A</title>
+  <style>
+    /* Base */
+    body { 
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; 
+      background: linear-gradient(135deg, #eef2f7, #fdfdfd);
+      color:#222; 
+      padding:32px; 
+    }
+    .container { 
+      max-width:880px; 
+      margin:0 auto; 
+      background:#fff; 
+      padding:28px; 
+      border-radius:14px; 
+      box-shadow:0 8px 28px rgba(0,0,0,0.08); 
+      transition:0.3s ease; 
+    }
+    .container:hover { box-shadow:0 10px 32px rgba(0,0,0,0.12); }
+
+    /* Heading */
+    h1 { 
+      margin-top:0; 
+      font-size:2rem; 
+      color:#0a3d62; 
+      letter-spacing: -0.5px;
+    }
+
+    /* Upload Form */
+    form { margin-bottom:16px; }
+    input[type="file"] { display:block; margin:10px 0; }
+    form button { 
+      background:#0a3d62; 
+      color:#fff; 
+      border:none; 
+      padding:10px 16px; 
+      border-radius:8px; 
+      cursor:pointer; 
+      font-weight:500; 
+    }
+    form button:hover { background:#07416f; }
+
+    /* Questions */
+    .questions { margin:16px 0; }
+    .questions button { 
+      margin:6px 6px 6px 0; 
+      padding:10px 14px; 
+      border-radius:8px; 
+      border:1px solid #dfe4ea; 
+      background:#f1f5f9; 
+      cursor:pointer; 
+      font-size:0.95rem;
+      transition:0.2s;
+    }
+    .questions button:hover { 
+      background:#0a3d62; 
+      color:#fff; 
+      border-color:#0a3d62;
+    }
+
+    /* Custom Q */
+    .custom { display:flex; gap:10px; margin-top:14px; }
+    .custom input[type="text"] { 
+      flex:1; 
+      padding:10px; 
+      border-radius:8px; 
+      border:1px solid #ccc; 
+      font-size:0.95rem; 
+    }
+    .custom button { 
+      background:#1e90ff; 
+      border:none; 
+      color:#fff; 
+      padding:10px 16px; 
+      border-radius:8px; 
+      cursor:pointer; 
+      font-weight:500; 
+      transition:0.2s;
+    }
+    .custom button:hover { background:#0f75d5; }
+
+    /* Answer box */
+    #answer-box { 
+      margin-top:20px; 
+      padding:18px; 
+      border-radius:10px; 
+      border:1px solid #e1e8f0; 
+      background:#f9fafc; 
+      font-size:1rem;
+      line-height:1.5; 
+    }
+    #answer-box h3 { margin-top:0; color:#0a3d62; }
+    #answer-box em { color:#777; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📄 Resume Q&A System</h1>
+
+    {% if not uploaded %}
+    <form method="POST" enctype="multipart/form-data">
+      <label><strong>Upload your resume (PDF)</strong></label>
+      <input type="file" name="resume" accept=".pdf" required>
+      <button type="submit">Upload Resume</button>
+    </form>
+    <p style="color:#444;">After uploading, click the sample questions or type your own.</p>
+    {% else %}
+    <h3 style="color:green;">✅ Resume uploaded</h3>
+
+    <div class="questions">
+      <button onclick="ask('Tell me about yourself')">Tell me about yourself</button>
+      <button onclick="ask('What are your skills?')">What are your skills?</button>
+      <button onclick="ask('Tell me your work experience')">Tell me your work experience</button>
+      <button onclick="ask('Tell me your education')">Tell me your education</button>
+    </div>
+
+    <div class="custom">
+     
+    </div>
+
+    <div id="answer-box"><em>Click a question to see the answer.</em></div>
+    {% endif %}
+  </div>
+
+  <script>
+    async function ask(question) {
+      const response = await fetch("/ask", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({question: question})
+      });
+      const data = await response.json();
+      if (data.error) {
+        document.getElementById("answer-box").innerHTML = "<p style='color:red;'>" + data.error + "</p>";
+      } else {
+        document.getElementById("answer-box").innerHTML = 
+          "<h3>" + question + "</h3>" + 
+          (data.answer || "<p>No answer found.</p>");
+      }
+    }
+
+    function askCustom() {
+      const q = document.getElementById("custom-q").value.trim();
+      if (!q) return;
+      ask(q);
+    }
+  </script>
+</body>
+</html>
